@@ -1,0 +1,16 @@
+stages:
+  - build
+
+build:
+  stage: build
+  image: docker:20.10-dind
+  before_script:
+    - |
+      git submodule update --init --recursive
+      ls -al
+  script:
+    - chmod +x test.sh
+    - ./test.sh
+  only:
+    - master
+    - merge_requests
