@@ -35,7 +35,7 @@ runFrontend() {
 checkResult() {
   sleep 10
   docker exec \
-    frontend-romanow \
+    frontend-"$STUDENT_LABEL" \
     curl -s http://backend-"$STUDENT_LABEL":8080/api/v1/public/items > /tmp/result-"$STUDENT_LABEL"
 
     if [ "$(cat /tmp/result-"$STUDENT_LABEL")" != "[]" ]; then
@@ -45,7 +45,8 @@ checkResult() {
 }
 
 BASE_LABEL=homework1
-STUDENT_LABEL=romanow
+# TODO student surname name
+STUDENT_LABEL=
 
 echo "=== Build backend backend:v1.0-$STUDENT_LABEL ==="
 buildBackend
