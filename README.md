@@ -16,7 +16,14 @@ list.
 
 ## Требования
 
-* Нужно реализовать двухэтапную сборку приложений.
+* Для успешного выполнения задания нужно установить на host машину:
+    * git;
+    * opendjk 11;
+    * docker;
+* Код backend'а и frontend'а хранится в отдельных репозиториях, их нужно затянуть
+  командой `git submodule update --init --recursive`.
+* Нужно реализовать двухэтапную сборку приложений, сборку контейнеров описать в
+  файлах [backend.Dockerfile](backend.Dockerfile) и [frontend.Dockerfile](frontend.Dockerfile).
 * Для персистентного хранения нужно создать Volume для PostgreSQL.
 * Внешний маппинг портов:
     * backend 8080:8080;
@@ -35,6 +42,7 @@ list.
 
 ## Пояснения
 
+* Для сборки на GitHub используется GitHub Actions, манифест сборки прописан в [main.yml](.github/workflows/main.yml).
 * Backend нужно запустить с профилем `docker`. Для этого требуется внутрь контейнера пробросить переменную
   среды `SPRING_PROFILES_ACTIVE=docker`.
 * Для очистки ресурсов можно использовать [cleanup.sh](cleanup.sh). Этот скрипт создает
