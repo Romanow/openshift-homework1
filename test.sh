@@ -56,16 +56,16 @@ docker network connect front-backend frontend-"$STUDENT_LABEL"
 }
 
 checkResult() {
-  sleep 10
-    rm -rf /tmp/result-"$STUDENT_LABEL"
-    docker exec \
+    sleep 10
+  docker exec \
     frontend-"$STUDENT_LABEL" \
     curl -s http://backend-"$STUDENT_LABEL":8080/api/v1/public/items > /tmp/result-"$STUDENT_LABEL"
-    chmod 777  /tmp/result-"$STUDENT_LABEL"
-    if [ "$(cat /tmp/result-"$STUDENT_LABEL")" = "[]" ]; then
+
+    if [ "$(cat /tmp/result-"$STUDENT_LABEL")" != "[]" ]; then
       echo "Check failed"
       exit 1
-       fi
+    fi
+
 
 }
 
