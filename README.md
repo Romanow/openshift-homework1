@@ -43,6 +43,8 @@ list.
 ## Пояснения
 
 * Для сборки на GitHub используется GitHub Actions, манифест сборки прописан в [main.yml](.github/workflows/main.yml).
+* Для сборки затяните `backend-todo-list` и `backend-todo-list` с помощью
+  команды `git submodule update --init --recursive`.
 * Backend нужно запустить с профилем `docker`. Для этого требуется внутрь контейнера пробросить переменную
   среды `SPRING_PROFILES_ACTIVE=docker`.
 * Для очистки ресурсов можно использовать [cleanup.sh](cleanup.sh). Этот скрипт создает

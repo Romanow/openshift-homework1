@@ -34,14 +34,16 @@ runFrontend() {
 
 checkResult() {
   sleep 10
-  docker exec \
-    frontend-"$STUDENT_LABEL" \
-    curl -s http://backend-"$STUDENT_LABEL":8080/api/v1/public/items > /tmp/result-"$STUDENT_LABEL"
+  http_response=$(
+    docker exec \
+      frontend-romanow \
+      curl -s -o response.txt -w "%{http_code}" http://backend-"$STUDENT_LABEL":8080/api/v1/public/items
+  )
 
-    if [ "$(cat /tmp/result-"$STUDENT_LABEL")" != "[]" ]; then
-      echo "Check failed"
-      exit 1
-    fi
+  if [ "$http_response" != "200" ]; then
+    echo "Check failed"
+    exit 1
+  fi
 }
 
 BASE_LABEL=homework1
