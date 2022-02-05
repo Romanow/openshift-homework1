@@ -14,29 +14,52 @@ buildBackend() {
 
 createNetworks() {
   echo "TODO create networks"
+  docker network create -d bridge --label "$BASE_LABEL-$STUDENT_LABEL" backend-network-"$STUDENT_LABEL"
+  docker network create -d bridge --label "$BASE_LABEL-$STUDENT_LABEL" front-network-"$STUDENT_LABEL"
 }
 
 createVolume() {
   echo "TODO create volume for postgres"
+  docker volume create postgres-data-"$STUDENT_LABEL" --label "$BASE_LABEL-$STUDENT_LABEL"
 }
 
 runPostgres() {
   echo "TODO run postgres"
+  docker run --name postgres \
+    --label "$BASE_LABEL-$STUDENT_LABEL" \
+    -v postgres-data-"$STUDENT_LABEL":/var/lib/postgresql/data \
+    --net backend-network-"$STUDENT_LABEL"  \
+    -e POSTGRES_PASSWORD=postgres \
+    -e POSTGRES_USER=postgres  \
+    -d  postgres:13-alpine
 }
 
 runBackend() {
   echo "TODO run backend"
+  docker run -d \
+    --name backend-"$STUDENT_LABEL" \
+    --label "$BASE_LABEL-$STUDENT_LABEL" \
+    --net backend-network-"$STUDENT_LABEL"  \
+    -p 8080:8080 \
+    backend:v1.0-"$STUDENT_LABEL"
+
 }
 
 runFrontend() {
   echo "RUN frontend"
+  docker run -d \
+    --name front-"$STUDENT_LABEL" \
+    --label "$BASE_LABEL-$STUDENT_LABEL" \
+    --net front-network-"$STUDENT_LABEL" \
+    -p 3000:80 \
+    frontend:v1.0-"$STUDENT_LABEL"
 }
 
 checkResult() {
   sleep 10
   http_response=$(
     docker exec \
-      frontend-romanow \
+      front-"$STUDENT_LABEL" \
       curl -s -o response.txt -w "%{http_code}" http://backend-"$STUDENT_LABEL":8080/api/v1/public/items
   )
 
@@ -48,7 +71,7 @@ checkResult() {
 
 BASE_LABEL=homework1
 # TODO student surname name
-STUDENT_LABEL=
+STUDENT_LABEL=Axtamov-A
 
 echo "=== Build backend backend:v1.0-$STUDENT_LABEL ==="
 buildBackend
