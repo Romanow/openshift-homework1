@@ -48,7 +48,7 @@ checkResult() {
 
 BASE_LABEL=homework1
 # TODO student surname name
-STUDENT_LABEL=
+STUDENT_LABEL=Nobotir
 
 echo "=== Build backend backend:v1.0-$STUDENT_LABEL ==="
 buildBackend
