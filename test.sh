@@ -3,19 +3,19 @@
 set -e
 
 buildFrontend() {
-  ./backend/gradlew clean build -p backend
+  #./backend/gradlew clean build -p backend
   DOCKER_BUILDKIT=1 docker build -f frontend.Dockerfile frontend/ --tag frontend:v1.0-"$STUDENT_LABEL"
 }
 
 buildBackend() {
-  ./backend/gradlew clean build -p backend
+  #./backend/gradlew clean build -p backend
   DOCKER_BUILDKIT=1 docker build -f backend.Dockerfile backend/ --tag backend:v1.0-"$STUDENT_LABEL"
 }
 
 createNetworks() {
   echo "create networks"
-  docker network create --driver bridge --label "$BASE_LABEL-$STUDENT_LABEL" network-frontend-"$STUDENT_LABEL"
-  docker network create --driver bridge --label "$BASE_LABEL-$STUDENT_LABEL" network-backend-"$STUDENT_LABEL"
+  docker network create -d bridge --label "$BASE_LABEL-$STUDENT_LABEL" network-frontend-"$STUDENT_LABEL"
+  docker network create -d bridge --label "$BASE_LABEL-$STUDENT_LABEL" network-backend-"$STUDENT_LABEL"
 }
 
 createVolume() {
@@ -37,13 +37,14 @@ runBackend() {
 runFrontend() {
   echo "run frontend"
   docker run --name frontend-"$BASE_LABEL-$STUDENT_LABEL" --net network-frontend-"$STUDENT_LABEL" -p 3000:80 -d frontend:v1.0-"$STUDENT_LABEL"
+  docker network connect network-backend-"$STUDENT_LABEL" frontend-"$BASE_LABEL-$STUDENT_LABEL"
 }
 
 checkResult() {
   sleep 10
   docker ps
-  #http_response=$(docker exec frontend-"$BASE_LABEL-$STUDENT_LABEL" curl -s -o response.txt -w "%{http_code}" http://backend-"$BASE_LABEL-$STUDENT_LABEL":8080/api/v1/public/items)
-  http_response=$(docker exec frontend-romanow curl -s -o response.txt -w "%{http_code}" http://backend-"$BASE_LABEL-$STUDENT_LABEL":8080/api/v1/public/items)
+  http_response=$(docker exec frontend-"$BASE_LABEL-$STUDENT_LABEL" curl -s -o response.txt -w "%{http_code}" http://backend-"$BASE_LABEL-$STUDENT_LABEL":8080/api/v1/public/items)
+  #http_response=$(docker exec frontend-romanow curl -s -o response.txt -w "%{http_code}" http://backend-"$BASE_LABEL-$STUDENT_LABEL":8080/api/v1/public/items)
 
   if [ "$http_response" != "200" ]; then
     echo "Check failed"
