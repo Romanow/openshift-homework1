@@ -25,7 +25,6 @@ createVolume() {
 
 runPostgres() {
   echo "run postgres"
-  echo "docker run --name postgres --net network-backend-"$STUDENT_LABEL" -v volume-pg-"$STUDENT_LABEL":/var/lib/postgresql/data -v backend/postgres:/docker-entrypoint-initdb.d -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -d library/postgres:13-alpine"
   docker run --name postgres --net network-backend-"$STUDENT_LABEL" -v volume-pg-"$STUDENT_LABEL":/var/lib/postgresql/data -v "$PWD"/backend/postgres:/docker-entrypoint-initdb.d -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -d library/postgres:13-alpine
 }
 
