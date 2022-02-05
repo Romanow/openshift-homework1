@@ -8,7 +8,7 @@ buildFrontend() {
 }
 
 buildBackend() {
-  #./backend/gradlew clean build -p backend
+  ./backend/gradlew clean build -p backend
   DOCKER_BUILDKIT=1 docker build -f backend.Dockerfile backend/ --tag backend:v1.0-"$STUDENT_LABEL"
 }
 
