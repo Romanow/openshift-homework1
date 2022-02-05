@@ -42,7 +42,7 @@ runBackend() {
     --name backend-"$STUDENT_LABEL" \
     --env "SPRING_PROFILES_ACTIVE=docker" \
     backend:v1.0-"$STUDENT_LABEL"
-  
+
   docker network connect db_bridge backend-"$STUDENT_LABEL"
   docker network connect app_bridge backend-"$STUDENT_LABEL"
 }
