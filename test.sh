@@ -30,6 +30,7 @@ runPostgres() {
 
 runBackend() {
   echo "run backend"
+  sleep 20
   docker run --name backend-"$BASE_LABEL-$STUDENT_LABEL" --net network-backend-"$STUDENT_LABEL" -e "SPRING_PROFILES_ACTIVE=docker" -p 8080:8080 -d backend:v1.0-"$STUDENT_LABEL" 
 }
 
@@ -39,7 +40,7 @@ runFrontend() {
 }
 
 checkResult() {
-  sleep 10
+  sleep 20
   http_response=$(
     docker exec \
       frontend-"$BASE_LABEL-$STUDENT_LABEL" \
