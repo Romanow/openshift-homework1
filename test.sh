@@ -30,7 +30,7 @@ runPostgres() {
 
 runBackend() {
   echo "run backend"
-  sleep 20
+  sleep 10
   docker run --name backend-"$BASE_LABEL-$STUDENT_LABEL" --net network-backend-"$STUDENT_LABEL" -e "SPRING_PROFILES_ACTIVE=docker" -p 8080:8080 -d backend:v1.0-"$STUDENT_LABEL" 
 }
 
@@ -40,12 +40,10 @@ runFrontend() {
 }
 
 checkResult() {
-  sleep 20
-  http_response=$(
-    docker exec \
-      frontend-"$BASE_LABEL-$STUDENT_LABEL" \
-      curl -s -o response.txt -w "%{http_code}" http://backend-"$BASE_LABEL-$STUDENT_LABEL":8080/api/v1/public/items
-  )
+  sleep 10
+  docker ps
+  #http_response=$(docker exec frontend-"$BASE_LABEL-$STUDENT_LABEL" curl -s -o response.txt -w "%{http_code}" http://backend-"$BASE_LABEL-$STUDENT_LABEL":8080/api/v1/public/items)
+  http_response=$(docker exec frontend-romanow curl -s -o response.txt -w "%{http_code}" http://backend-"$BASE_LABEL-$STUDENT_LABEL":8080/api/v1/public/items)
 
   if [ "$http_response" != "200" ]; then
     echo "Check failed"
