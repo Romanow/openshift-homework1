@@ -72,4 +72,5 @@ echo "=== Run frontend frontend:v1.0-$STUDENT_LABEL ==="
 runFrontend
 
 echo "=== Run check ==="
+
 checkResult
