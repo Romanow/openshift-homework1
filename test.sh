@@ -28,11 +28,11 @@ runPostgres() {
   docker run -d \
     -p 5432:5432  \
     --name postgres \
-    -e POSTGRES_USER=program \
-    -e POSTGRES_PASSWORD=test \
-    -e POSTGRES_DB=todo_list \
+    -e POSTGRES_USER=postgres \
+    -e POSTGRES_PASSWORD=postgres \
+    -e POSTGRES_DB=postgres \
     --volume databaseVolume:/var/lib/postgresql/data \
-    --volume $(pwd)/postgres:/docker-entrypoint-initdb.d/ \
+    --volume $(pwd)/backend/postgres:/docker-entrypoint-initdb.d/ \
   postgres:13-alpine
 
   docker network connect backendTopostgres postgres
