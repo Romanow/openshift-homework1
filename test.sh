@@ -23,6 +23,7 @@ createNetworks() {
     --driver bridge    
 }
 
+# Create Volumes
 createVolume() {
   echo "TODO create volume for postgres"
   docker volume create postgres_data_volume-"$STUDENT_LABEL" \
