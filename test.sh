@@ -3,7 +3,7 @@
 set -e
 
 buildFrontend() {
-  #./backend/gradlew clean build -p backend
+  ./backend/gradlew clean build -p backend
   DOCKER_BUILDKIT=1 docker build -f frontend.Dockerfile frontend/ --tag frontend:v1.0-"$STUDENT_LABEL"
 }
 
@@ -14,36 +14,55 @@ buildBackend() {
 
 createNetworks() {
   echo "TODO create networks"
+  docker network create --driver bridge frontendTobackend  --label $BASE_LABEL-$STUDENT_LABEL
+  docker network create --driver bridge backendTopostgres --label $BASE_LABEL-$STUDENT_LABEL
 }
 
 createVolume() {
   echo "TODO create volume for postgres"
+  docker volume create databaseVolume --label $BASE_LABEL-$STUDENT_LABEL
 }
 
 runPostgres() {
   echo "TODO run postgres"
+  docker run -d \
+    -p 5432:5432  \
+    --name postgres \
+    -e POSTGRES_USER=program \
+    -e POSTGRES_PASSWORD=test \
+    -e POSTGRES_DB=todo_list \
+    --volume databaseVolume:/var/lib/postgresql/data \
+    --volume $(pwd)/postgres:/docker-entrypoint-initdb.d/ \
+  postgres:13-alpine
+
+  docker network connect backendTopostgres postgres
 }
 
 runBackend() {
   echo "TODO run backend"
+  docker run -d -p 8080:8080 -e "SPRING_PROFILES_ACTIVE=docker"  --name backend-"$STUDENT_LABEL" backend-"$STUDENT_LABEL"
+
+  docker network connect backendTopostgres backend-"$STUDENT_LABEL"
+  docker network connect frontendTobackend backend-"$STUDENT_LABEL"
 }
+
 
 runFrontend() {
   echo "RUN frontend"
+  docker run -d -p 3000:80 --name frontend-"$STUDENT_LABEL" frontend-"$STUDENT_LABEL"
+  docker network connect frontendTobackend frontend-"$STUDENT_LABEL"
 }
 
 checkResult() {
-  sleep 10
-  http_response=$(
-    docker exec \
-      frontend-Nobotir \
-      curl -s -o response.txt -w "%{http_code}" http://backend-"$STUDENT_LABEL":8080/api/v1/public/items
-  )
+  sleep 20
+  docker exec \
+    frontend-"$STUDENT_LABEL" \
+    curl -s http://backend-"$STUDENT_LABEL":8080/api/v1/public/items > /tmp/result-"$STUDENT_LABEL"
 
-  if [ "$http_response" != "200" ]; then
-    echo "Check failed"
-    exit 1
-  fi
+    if [ "$(cat /tmp/result-"$STUDENT_LABEL")" != "[]" ]; then
+      echo "Check failed"
+      exit 1
+    fi
 }
 
 BASE_LABEL=homework1
