@@ -1,5 +1,5 @@
 #!/bin/sh
-
+#Test actions
 set -e
 
 buildFrontend() {
