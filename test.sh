@@ -45,7 +45,7 @@ runBackend() {
 runFrontend() {
   echo "RUN frontend"
   docker run -d --name frontend-"$STUDENT_LABEL" --label "$BASE_LABEL-$STUDENT_LABEL" --network frontend-network-"$STUDENT_LABEL" -p 3000:80 frontend:v1.0-"$STUDENT_LABEL"
-  docker network connect network-backend-"$STUDENT_LABEL" frontend-"$STUDENT_LABEL"
+  docker network connect backend-network-"$STUDENT_LABEL" frontend-"$STUDENT_LABEL"
 }
 
 checkResult() {
