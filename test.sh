@@ -13,31 +13,59 @@ buildBackend() {
 }
 
 createNetworks() {
-  echo "TODO create networks"
+  echo "create networks"
+  docker network create -d bridge net-backend-"$BASE_LABEL"-"$STUDENT_LABEL" --label "$BASE_LABEL"-"$STUDENT_LABEL"
+  docker network create -d bridge net-frontend-"$BASE_LABEL"-"$STUDENT_LABEL" --label "$BASE_LABEL"-"$STUDENT_LABEL"
 }
 
 createVolume() {
-  echo "TODO create volume for postgres"
+  echo "create volume for postgres"
+  docker volume create pg-data --label "$BASE_LABEL"-"$STUDENT_LABEL"
 }
 
 runPostgres() {
-  echo "TODO run postgres"
+  echo "run postgres"
+  docker run -d \
+	--name postgres \
+	--network=net-backend-"$BASE_LABEL"-"$STUDENT_LABEL" \
+	-p 5432:5432 \
+	-e POSTGRES_USER=program \
+    -e POSTGRES_PASSWORD=test \
+    -e POSTGRES_DB=todo_list \
+	-e PGDATA=/var/lib/postgresql/data/pgdata \
+	-v pg-data:/var/lib/postgresql/data \
+	--label "$BASE_LABEL"-"$STUDENT_LABEL" \
+	postgres:13-alpine
 }
 
 runBackend() {
-  echo "TODO run backend"
+  echo "run backend" 
+  docker create  \
+    --name backend-"$BASE_LABEL"-"$STUDENT_LABEL" \
+	-p 8080:8080 \
+	--label "$BASE_LABEL"-"$STUDENT_LABEL" \
+	backend:v1.0-"$STUDENT_LABEL"
+	docker network connect net-backend-"$BASE_LABEL"-"$STUDENT_LABEL" backend-"$BASE_LABEL"-"$STUDENT_LABEL"
+	docker network connect net-frontend-"$BASE_LABEL"-"$STUDENT_LABEL" backend-"$BASE_LABEL"-"$STUDENT_LABEL"
+	docker start backend-"$BASE_LABEL"-"$STUDENT_LABEL"
 }
 
 runFrontend() {
-  echo "RUN frontend"
+  echo "frontend"
+  docker run -d  \
+    --name frontend-"$BASE_LABEL"-"$STUDENT_LABEL" \
+  	--network=net-frontend-"$BASE_LABEL"-"$STUDENT_LABEL" \
+	-p 3000:80 \
+	--label "$BASE_LABEL"-"$STUDENT_LABEL" \
+	frontend:v1.0-"$STUDENT_LABEL"
 }
 
 checkResult() {
   sleep 10
   http_response=$(
     docker exec \
-      frontend-romanow \
-      curl -s -o response.txt -w "%{http_code}" http://backend-"$STUDENT_LABEL":8080/api/v1/public/items
+      frontend-"$BASE_LABEL"-"$STUDENT_LABEL" \
+      curl -s -o response.txt -w "%{http_code}" http://backend-"$BASE_LABEL"-"$STUDENT_LABEL":8080/api/v1/public/items
   )
 
   if [ "$http_response" != "200" ]; then
@@ -47,8 +75,8 @@ checkResult() {
 }
 
 BASE_LABEL=homework1
-# TODO student surname name
-STUDENT_LABEL=
+# student surname name
+STUDENT_LABEL=shevchenko
 
 echo "=== Build backend backend:v1.0-$STUDENT_LABEL ==="
 buildBackend
