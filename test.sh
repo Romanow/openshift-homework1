@@ -38,9 +38,7 @@ runFrontend() {
 checkResult() {
   sleep 10
   http_response=$(
-    docker exec \
-      frontend-homework1-Alimov \
-      curl -s -o response.txt -w "%{http_code}" http://backend-"$STUDENT_LABEL":8080/api/v1/public/items
+    docker exec frontend-homework1-Alimov curl -v http://backend-"$STUDENT_LABEL":8080/api/v1/public/items
   )
 
   if [ "$http_response" != "200" ]; then
