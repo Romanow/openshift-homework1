@@ -3,12 +3,12 @@
 set -e
 
 buildFrontend() {
-  ./backend/gradlew clean build -p backend
+  ./backend/gradlew clean build -p backend -x test
   DOCKER_BUILDKIT=1 docker build -f frontend.Dockerfile frontend/ --tag frontend:v1.0-"$STUDENT_LABEL"
 }
 
 buildBackend() {
-  ./backend/gradlew clean build -p backend
+  ./backend/gradlew clean build -p backend -x test
   DOCKER_BUILDKIT=1 docker build -f backend.Dockerfile backend/ --tag backend:v1.0-"$STUDENT_LABEL"
 }
 
@@ -28,7 +28,8 @@ runPostgres() {
   docker run --name postgres \
     --label "$BASE_LABEL-$STUDENT_LABEL" \
     -v postgres-data-"$STUDENT_LABEL":/var/lib/postgresql/data \
-    --net backend-network-"$STUDENT_LABEL"  \
+    -v "$PWD"/backend/postgres:/docker-entrypoint-initdb.d/ \
+    --network backend-network-"$STUDENT_LABEL"  \
     -e POSTGRES_PASSWORD=postgres \
     -e POSTGRES_USER=postgres  \
     -d  postgres:13-alpine
@@ -36,13 +37,15 @@ runPostgres() {
 
 runBackend() {
   echo "TODO run backend"
-  docker run -d \
+  docker run  \
     --name backend-"$STUDENT_LABEL" \
     --label "$BASE_LABEL-$STUDENT_LABEL" \
-    --net backend-network-"$STUDENT_LABEL"  \
+    --network backend-network-"$STUDENT_LABEL" \
+    --env "SPRING_PROFILES_ACTIVE=docker" \
     -p 8080:8080 \
-    backend:v1.0-"$STUDENT_LABEL"
+    -d backend:v1.0-"$STUDENT_LABEL"
 
+  docker network connect front-network-"$STUDENT_LABEL" backend-"$STUDENT_LABEL"
 }
 
 runFrontend() {
@@ -50,7 +53,7 @@ runFrontend() {
   docker run -d \
     --name front-"$STUDENT_LABEL" \
     --label "$BASE_LABEL-$STUDENT_LABEL" \
-    --net front-network-"$STUDENT_LABEL" \
+    --network front-network-"$STUDENT_LABEL" \
     -p 3000:80 \
     frontend:v1.0-"$STUDENT_LABEL"
 }
@@ -59,7 +62,7 @@ checkResult() {
   sleep 10
   http_response=$(
     docker exec \
-      front-"$STUDENT_LABEL" \
+      front-Axtamov-A \
       curl -s -o response.txt -w "%{http_code}" http://backend-"$STUDENT_LABEL":8080/api/v1/public/items
   )
 
