@@ -50,11 +50,9 @@ runBackend() {
   echo "TODO run backend"
   docker run -d -p 8080:8080 --name backend-"$STUDENT_LABEL" \
   --env "SPRING_PROFILES_ACTIVE=docker" \
-  --network backendTopostgres \
-  --network frontendTobackend \
   backend:v1.0-"$STUDENT_LABEL"
-  #docker network connect backendTopostgres backend-"$STUDENT_LABEL" # zadano cherez --network
-  #docker network connect frontendTobackend backend-"$STUDENT_LABEL" # zadano cherez --network
+  docker network connect backendTopostgres backend-"$STUDENT_LABEL"
+  docker network connect frontendTobackend backend-"$STUDENT_LABEL"
   
 }
 
