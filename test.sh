@@ -50,8 +50,8 @@ checkResult() {
   sleep 10
   http_response=$(
     docker exec \
-      frontend-"$BASE_LABEL-$STUDENT_LABEL" \
-      curl -s -o response.txt -w "%{http_code}" http://backend-"$BASE_LABEL-$STUDENT_LABEL":8080/api/v1/public/items
+      frontend-"$STUDENT_LABEL" \
+      curl -s -o response.txt -w "%{http_code}" http://backend-"$STUDENT_LABEL":8080/api/v1/public/items
   )
 
   if [ "$http_response" != "200" ]; then
@@ -62,7 +62,7 @@ checkResult() {
 
 BASE_LABEL=homework1
 # TODO student surname name
-STUDENT_LABEL=Garipov_Emil
+STUDENT_LABEL=Garipov
 
 echo "=== Build backend backend:v1.0-$STUDENT_LABEL ==="
 buildBackend
