@@ -12,23 +12,46 @@ buildBackend() {
 }
 
 createNetworks() {
-  echo "TODO create networks"
+  docker network create -d bridge back_net-"$STUDENT_LABEL" --label "$BASE_LABEL"-"$STUDENT_LABEL"
+  docker network create -d bridge front_net-"$STUDENT_LABEL" --label "$BASE_LABEL"-"$STUDENT_LABEL"
 }
 
 createVolume() {
-  echo "TODO create volume for postgres"
+  docker volume create postgres_data-"$STUDENT_LABEL" --label "$BASE_LABEL"-"$STUDENT_LABEL"
 }
 
 runPostgres() {
-  echo "TODO run postgres"
+  docker run -d \
+              --name postgres \
+              --network= back_net-"$STUDENT_LABEL" \
+              --p 5432:5432 \
+              -e POSTGRES_USER = program \
+              -e POSTGRES_PASSWORD = test \
+              -e POSTGRES_DB = todo_list \
+              -e PGDATA = /var/lib/postgresql/data/pgdata \
+              -v postgres_data-"$STUDENT_LABEL":/var/lib/postgresql/data \
+              --label "$BASE_LABEL"-"$STUDENT_LABEL" \
+              postgres:13-alpine
 }
 
 runBackend() {
-  echo "TODO run backend"
+  docker create \
+          --name backend-"$STUDENT_LABEL" \
+          -p 8080:8080 \
+          --label "$BASE_LABEL"-"$STUDENT_LABEL" \
+          backend:v1.0-"$STUDENT_LABEL"
+          docker network connect back_net-"$STUDENT_LABEL" backend-"$STUDENT_LABEL"
+          docker network connect front_net-"$STUDENT_LABEL" backend-"$STUDENT_LABEL"
+          docker start backend-"$STUDENT_LABEL"
 }
 
 runFrontend() {
-  echo "RUN frontend"
+  docker run -d \
+              --name frontend-"$STUDENT_LABEL" \
+              --network=front_net-"$STUDENT_LABEL" \
+              -p 3030:80 \
+              --label "$BASE_LABEL"-"$STUDENT_LABEL"\
+              frontend:v1.0-"$STUDENT_LABEL"
 }
 
 checkResult() {
@@ -47,7 +70,7 @@ checkResult() {
 
 BASE_LABEL=homework1
 # TODO student surname name
-STUDENT_LABEL=
+STUDENT_LABEL=KuchkarovOybek
 
 echo "=== Build backend backend:v1.0-$STUDENT_LABEL ==="
 buildBackend
