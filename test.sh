@@ -28,24 +28,22 @@ createVolume() {
   echo "TODO create volume for postgres"
   docker volume create postgres_data_volume-"$STUDENT_LABEL" \
     --label "$BASE_LABEL-$STUDENT_LABEL"
-  docker volume create postgres_log_volume-"$STUDENT_LABEL" \
-    --label "$BASE_LABEL-$STUDENT_LABEL"   
 }
 
 runPostgres() {
   echo "TODO run postgres"
-  docker run -d --name postgres --label "$BASE_LABEL-$STUDENT_LABEL" --network backend-network-"$STUDENT_LABEL" --volume postgres_data_volume-"$STUDENT_LABEL":/var/lib/postgresql/data --volume postgres_log_volume-"$STUDENT_LABEL":/var/log/postgresql --env POSTGRES_PASSWORD=postgres --env POSTGRES_USER=postgres --env POSTGRES_DB=postgres postgres:13-alpine
+  docker run -d --name postgres --label "$BASE_LABEL-$STUDENT_LABEL" --network backend-network-"$STUDENT_LABEL" --volume postgres_data_volume-"$STUDENT_LABEL":/var/lib/postgresql/data --volume "$PWD"/backend/postgres:/docker-entrypoint-initdb.d -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres postgres:13-alpine
 }
 
 runBackend() {
   echo "TODO run backend"
-  docker run -d --name backend-"$STUDENT_LABEL" --label "$BASE_LABEL-$STUDENT_LABEL" --network backend-network-"$STUDENT_LABEL" --env "SPRING_PROFILES_ACTIVE=docker" -p 8080:8080 backend:v1.0-"$STUDENT_LABEL"  
+  docker run -d --name backend-"$STUDENT_LABEL" --label "$BASE_LABEL-$STUDENT_LABEL" --network frontend-network-"$STUDENT_LABEL" --env "SPRING_PROFILES_ACTIVE=docker" -p 8080:8080 backend:v1.0-"$STUDENT_LABEL"  
+  docker network connect backend-network-"$STUDENT_LABEL" backend-"$STUDENT_LABEL"
 }
 
 runFrontend() {
   echo "RUN frontend"
   docker run -d --name frontend-"$STUDENT_LABEL" --label "$BASE_LABEL-$STUDENT_LABEL" --network frontend-network-"$STUDENT_LABEL" -p 3000:80 frontend:v1.0-"$STUDENT_LABEL"
-  docker network connect backend-network-"$STUDENT_LABEL" frontend-"$STUDENT_LABEL"
 }
 
 checkResult() {
