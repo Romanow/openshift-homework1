@@ -31,21 +31,22 @@ createVolume() {
 
 runPostgres() {
   echo "RUN postgres"
+  echo "$PWD"
   docker run -d \
     --publish 5432:5432 \
     --name postgres \
     --env POSTGRES_USER=program \
     --env POSTGRES_PASSWORD=test \
-    --env POSTGRES_DB=todo_list \
     --volume databaseVolume:/var/lib/postgresql/data \
-    --volume /"$pwd"/backend/postgres:/docker-entrypoint-initdb.d/ \
+    --volume /"$PWD"/backend/postgres:/docker-entrypoint-initdb.d/ \
     --network backendTopostgres \
     postgres:13-alpine
+    
 }
 
 
 runBackend() {
-  sleep 20
+  sleep 50
   echo "TODO run backend"
   docker run -d -p 8080:8080 --name backend-"$STUDENT_LABEL" \
   --env "SPRING_PROFILES_ACTIVE=docker" \
@@ -65,7 +66,7 @@ runFrontend() {
 }
 
 checkResult() {
-  sleep 5
+  sleep 10
   docker exec \
     frontend-"$STUDENT_LABEL" \
     curl -s http://backend-"$STUDENT_LABEL":8080/api/v1/public/items > /tmp/result-"$STUDENT_LABEL"
@@ -78,7 +79,7 @@ checkResult() {
 
 BASE_LABEL=homework1
 # TODO student surname name
-STUDENT_LABEL=nobotir
+STUDENT_LABEL=botir
 
 echo "=== Build backend backend:v1.0-$STUDENT_LABEL ==="
 buildBackend
