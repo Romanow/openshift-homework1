@@ -43,7 +43,7 @@ runBackend() {
   -e SPRING_PROFILES_ACTIVE=docker \
   --network postgres_network \
   backend:v1.0-"$STUDENT_LABEL"
-  docker network connect backend_network backend-"$STUDENT_LABEL"
+  docker network connect backend_frontend backend-"$STUDENT_LABEL"
   echo "TODO run backend"
 }
 
