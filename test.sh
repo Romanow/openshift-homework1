@@ -24,7 +24,7 @@ createVolume() {
 
 runPostgres() {
   echo "TODO run postgres"
-  docker run -dit --name postgres-"$STUDENT_LABEL" -p 5432:5432 \
+  docker run -dit --name postgres -p 5432:5432 \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=postgres \
   -e POSTGRES_DB=postgres \
