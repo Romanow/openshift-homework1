@@ -7,7 +7,7 @@ buildFrontend() {
 }
 
 buildBackend() {
-  ./backend/gradlew clean build -p backend
+  ./backend/gradlew clean build -p backend -x test
   DOCKER_BUILDKIT=1 docker build -f backend.Dockerfile backend/ --tag backend:v1.0-"$STUDENT_LABEL"
 }
 
@@ -18,7 +18,7 @@ createNetworks() {
 }
 
 createVolume() {
-  docker volume create postgres-data --label "$BASE_LABEL-$STUDENT_LABEL"
+  docker volume create postgres-data-"$STUDENT_LABEL" --label "$BASE_LABEL-$STUDENT_LABEL"
   echo "TODO create volume for postgres"
 }
 
@@ -28,18 +28,21 @@ runPostgres() {
   --label "$BASE_LABEL-$STUDENT_LABEL" \
   -e POSTGRES_USER=program \
   -e POSTGRES_PASSWORD=test \
-  --volume data_volume:/var/lib/postgresql/data \
+  -e POSTGRES_DB=todo_list \
+  --volume postgres-data-"$STUDENT_LABEL":/var/lib/postgresql/data \
+  --volume "$PWD"/backend/postgres:/docker-entrypoint-initdb.d \
   --network postgres_network \
   postgres:13
   echo "TODO run postgres"
 }
 
 runBackend() {
+sleep 10
   docker run -d \
   --name backend-"$STUDENT_LABEL" \
   --label "$BASE_LABEL-$STUDENT_LABEL" \
   -p 8080:8080 \
-  -e SPRING_PROFILES_ACTIVE=docker \
+  -e "SPRING_PROFILES_ACTIVE=docker" \
   --network postgres_network \
   backend:v1.0-"$STUDENT_LABEL"
   docker network connect backend_frontend backend-"$STUDENT_LABEL"
@@ -97,3 +100,4 @@ runFrontend
 
 echo "=== Run check ==="
 checkResult
+
