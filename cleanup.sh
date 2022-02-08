@@ -1,7 +1,7 @@
 #!/bin/sh
 
 BASE_LABEL=homework1
-STUDENT_LABEL=romanow
+STUDENT_LABEL=Granovsky
 
 docker run -d \
   -v /var/run/docker.sock:/var/run/docker.sock \
@@ -9,3 +9,4 @@ docker run -d \
   quay.io/testcontainers/ryuk
 
 printf "label=%s" "$BASE_LABEL-$STUDENT_LABEL" | nc localhost 9000
+
