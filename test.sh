@@ -97,5 +97,3 @@ runFrontend
 
 echo "=== Run check ==="
 checkResult
-
-sleep 100
