@@ -12,8 +12,8 @@ buildBackend() {
 }
 
 createNetworks() {
-  docker network create --driver bridge backend_frontend --label "$BASE_LABEL-$STUDENT_LABEL"
-  docker network create --driver bridge postgres_network --label "$BASE_LABEL-$STUDENT_LABEL"
+  docker network create --driver bridge backend_frontend-"$STUDENT_LABEL" --label "$BASE_LABEL-$STUDENT_LABEL"
+  docker network create --driver bridge postgres_network-"$STUDENT_LABEL" --label "$BASE_LABEL-$STUDENT_LABEL"
   echo "TODO create networks"
 }
 
@@ -27,12 +27,12 @@ runPostgres() {
   --name postgres \
   -p 5432:5432 \
   --label "$BASE_LABEL-$STUDENT_LABEL" \
-  -e POSTGRES_USER=program \
-  -e POSTGRES_PASSWORD=test \
-  -e POSTGRES_DB=todo_list \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=postgres \
   --volume postgres-data-"$STUDENT_LABEL":/var/lib/postgresql/data \
   --volume "$PWD"/backend/postgres:/docker-entrypoint-initdb.d \
-  --network postgres_network \
+  --network postgres_network-"$STUDENT_LABEL" \
   postgres:13
   echo "TODO run postgres"
 }
@@ -44,9 +44,9 @@ sleep 10
   --label "$BASE_LABEL-$STUDENT_LABEL" \
   -p 8080:8080 \
   -e "SPRING_PROFILES_ACTIVE=docker" \
-  --network postgres_network \
+  --network postgres_network-"$STUDENT_LABEL" \
   backend:v1.0-"$STUDENT_LABEL"
-  docker network connect backend_frontend backend-"$STUDENT_LABEL"
+  docker network connect backend_frontend-"$STUDENT_LABEL" backend-"$STUDENT_LABEL"
   echo "TODO run backend"
 }
 
@@ -55,7 +55,7 @@ runFrontend() {
   --name frontend-"$STUDENT_LABEL" \
   --label "$BASE_LABEL-$STUDENT_LABEL" \
   -p 3000:80 \
-  --network backend_frontend \
+  --network backend_frontend-"$STUDENT_LABEL" \
   frontend:v1.0-"$STUDENT_LABEL"
   echo "RUN frontend"
 }
