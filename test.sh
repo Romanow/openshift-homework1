@@ -3,7 +3,6 @@
 set -e
 
 buildFrontend() {
-  ./backend/gradlew clean build -p backend
   DOCKER_BUILDKIT=1 docker build -f frontend.Dockerfile frontend/ --tag frontend:v1.0-"$STUDENT_LABEL"
 }
 
@@ -52,7 +51,7 @@ runFrontend() {
   --name frontend-"$STUDENT_LABEL" \
   --label "$BASE_LABEL-$STUDENT_LABEL" \
   -p 3000:80 \
-  --network backend_network \
+  --network backend_frontend \
   frontend:v1.0-"$STUDENT_LABEL"
   echo "RUN frontend"
 }
@@ -61,7 +60,7 @@ checkResult() {
   sleep 10
   http_response=$(
     docker exec \
-      frontend-akramov \
+      frontend-"$STUDENT_LABEL" \
       curl -s -o response.txt -w "%{http_code}" http://backend-"$STUDENT_LABEL":8080/api/v1/public/items
   )
 
