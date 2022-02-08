@@ -9,3 +9,4 @@ docker run -d \
   quay.io/testcontainers/ryuk
 
 printf "label=%s" "$BASE_LABEL-$STUDENT_LABEL" | nc localhost 9000
+
