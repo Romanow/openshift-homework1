@@ -25,6 +25,7 @@ createVolume() {
 runPostgres() {
   docker run -d \
   --name postgres \
+  -p 5432:5432 \
   --label "$BASE_LABEL-$STUDENT_LABEL" \
   -e POSTGRES_USER=program \
   -e POSTGRES_PASSWORD=test \
