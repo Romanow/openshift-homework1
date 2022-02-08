@@ -1,7 +1,7 @@
 #!/bin/sh
 
 BASE_LABEL=homework1
-STUDENT_LABEL=romanow
+STUDENT_LABEL=Granovsky
 
 docker run -d \
   -v /var/run/docker.sock:/var/run/docker.sock \
