@@ -3,7 +3,7 @@
 set -e
 
 buildFrontend() {
-   DOCKER_BUILDKIT=1 docker build -f frontend.Dockerfile frontend/ --tag frontend:v1.0-"$STUDENT_LABEL"
+  DOCKER_BUILDKIT=1 docker build -f frontend.Dockerfile frontend/ --tag frontend:v1.0-"$STUDENT_LABEL"
 }
 
 buildBackend() {
@@ -37,7 +37,7 @@ checkResult() {
   sleep 10
   http_response=$(
     docker exec \
-      frontend-romanow \
+      frontend-"$STUDENT_LABEL" \
       curl -s -o response.txt -w "%{http_code}" http://backend-"$STUDENT_LABEL":8080/api/v1/public/items
   )
 
