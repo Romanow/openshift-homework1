@@ -3,12 +3,11 @@
 set -e
 
 buildFrontend() {
-  ./backend/gradlew clean build -p backend
-  DOCKER_BUILDKIT=1 docker build -f frontend.Dockerfile frontend/ --tag frontend:v1.0-"$STUDENT_LABEL"
+   DOCKER_BUILDKIT=1 docker build -f frontend.Dockerfile frontend/ --tag frontend:v1.0-"$STUDENT_LABEL"
 }
 
 buildBackend() {
-  ./backend/gradlew clean build -p backend
+  ./backend/gradlew clean build -p backend -x test
   DOCKER_BUILDKIT=1 docker build -f backend.Dockerfile backend/ --tag backend:v1.0-"$STUDENT_LABEL"
 }
 
@@ -18,11 +17,11 @@ createNetworks() {
 }
 
 createVolume() {
-  docker volume create postgres-data
+  docker volume create volume-"$STUDENT_LABEL"
 }
 
 runPostgres() {
-  docker run --name postgres --publish 5432:5432 --env POSTGRES_USER=program --env POSTGRES_PASSWORD=test --env POSTGRES_DB=todo_list --volume postgres-data:/var/lib/postgresql/data postgres:13
+  docker run -d --name postgres --publish 5432:5432 --env POSTGRES_USER=program --env POSTGRES_PASSWORD=test --env POSTGRES_DB=todo_list --volume postgres-data:/var/lib/postgresql/data postgres:13
 }
 
 runBackend() {
@@ -52,6 +51,12 @@ BASE_LABEL=homework1
 # TODO student surname name
 STUDENT_LABEL=alex-kim
 
+echo "=== Create persistence volume for postgres ==="
+createVolume
+
+echo "== Run Postgres ==="
+runPostgres
+
 echo "=== Build backend backend:v1.0-$STUDENT_LABEL ==="
 buildBackend
 
@@ -60,12 +65,6 @@ buildFrontend
 
 echo "=== Create networks between backend <-> postgres and backend <-> frontend ==="
 createNetworks
-
-echo "=== Create persistence volume for postgres ==="
-createVolume
-
-echo "== Run Postgres ==="
-runPostgres
 
 echo "=== Run backend backend:v1.0-$STUDENT_LABEL ==="
 runBackend
