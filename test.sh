@@ -13,23 +13,25 @@ buildBackend() {
 }
 
 createNetworks() {
-  echo "TODO create networks"
+	docker network create db-con
+	docker network create api-con
 }
 
 createVolume() {
-  echo "TODO create volume for postgres"
+  docker volume create postgres-data
 }
 
 runPostgres() {
-  echo "TODO run postgres"
+  docker run --name postgres --publish 5432:5432 --env POSTGRES_USER=program --env POSTGRES_PASSWORD=test --env POSTGRES_DB=todo_list --volume postgres-data:/var/lib/postgresql/data postgres:13
 }
 
 runBackend() {
-  echo "TODO run backend"
+  docker run -p 8080:8080 --name backend --env "SPRING_PROFILES_ACTIVE=docker" --network db-con backend:v1.0-"$STUDENT_LABEL"
+  docker network connect api-con backend
 }
 
 runFrontend() {
-  echo "RUN frontend"
+  docker run -p 3000:80 --name frontend --network api-con frontend:v1.0-"$STUDENT_LABEL"
 }
 
 checkResult() {
@@ -48,7 +50,7 @@ checkResult() {
 
 BASE_LABEL=homework1
 # TODO student surname name
-STUDENT_LABEL=
+STUDENT_LABEL=alex-kim
 
 echo "=== Build backend backend:v1.0-$STUDENT_LABEL ==="
 buildBackend
