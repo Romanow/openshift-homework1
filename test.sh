@@ -22,15 +22,16 @@ createVolume() {
 
 runPostgres() {
   docker run -d --name postgres --publish 5432:5432 --env POSTGRES_USER=program --env POSTGRES_PASSWORD=test --env POSTGRES_DB=todo_list --volume postgres-data:/var/lib/postgresql/data postgres:13
+  docker network connect db-con postgres
 }
 
 runBackend() {
-  docker run -p 8080:8080 --name backend --env "SPRING_PROFILES_ACTIVE=docker" --network db-con backend:v1.0-"$STUDENT_LABEL"
+  docker run -d -p 8080:8080 --name backend --env "SPRING_PROFILES_ACTIVE=docker" --network db-con backend:v1.0-"$STUDENT_LABEL"
   docker network connect api-con backend
 }
 
 runFrontend() {
-  docker run -p 3000:80 --name frontend --network api-con frontend:v1.0-"$STUDENT_LABEL"
+  docker run -d -p 3000:80 --name frontend --network api-con frontend:v1.0-"$STUDENT_LABEL"
 }
 
 checkResult() {
@@ -54,6 +55,9 @@ STUDENT_LABEL=alex-kim
 echo "=== Create persistence volume for postgres ==="
 createVolume
 
+echo "=== Create networks between backend <-> postgres and backend <-> frontend ==="
+createNetworks
+
 echo "== Run Postgres ==="
 runPostgres
 
@@ -62,9 +66,6 @@ buildBackend
 
 echo "=== Build frontend frontend:v1.0-$STUDENT_LABEL ==="
 buildFrontend
-
-echo "=== Create networks between backend <-> postgres and backend <-> frontend ==="
-createNetworks
 
 echo "=== Run backend backend:v1.0-$STUDENT_LABEL ==="
 runBackend
