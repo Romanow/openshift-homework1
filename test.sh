@@ -26,12 +26,12 @@ runPostgres() {
 }
 
 runBackend() {
-  docker run -d -p 8080:8080 --name backend --env "SPRING_PROFILES_ACTIVE=docker" --network db-con backend:v1.0-"$STUDENT_LABEL"
-  docker network connect api-con backend
+  docker run -d -p 8080:8080 --name backend:v1.0-"$STUDENT_LABEL" --env "SPRING_PROFILES_ACTIVE=docker" --network db-con backend:v1.0-"$STUDENT_LABEL"
+  docker network connect api-con backend:v1.0-"$STUDENT_LABEL"
 }
 
 runFrontend() {
-  docker run -d -p 3000:80 --name frontend --network api-con frontend:v1.0-"$STUDENT_LABEL"
+  docker run -d -p 3000:80 --name frontend:v1.0-"$STUDENT_LABEL" --network api-con frontend:v1.0-"$STUDENT_LABEL"
 }
 
 checkResult() {
