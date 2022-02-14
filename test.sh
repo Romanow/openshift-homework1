@@ -3,12 +3,12 @@
 set -e
 
 buildFrontend() {
-  DOCKER_BUILDKIT=1 docker build -f frontend/Dockerfile frontend/ --tag frontend:v1.0-"$STUDENT_LABEL"
+  DOCKER_BUILDKIT=1 docker build -f frontend.Dockerfile frontend/ --tag frontend:v1.0-"$STUDENT_LABEL"
 }
 
 buildBackend() {
   ./backend/gradlew clean build -p backend -x test
-  DOCKER_BUILDKIT=1 docker build -f backend/Dockerfile backend/ --tag backend:v1.0-"$STUDENT_LABEL"
+  DOCKER_BUILDKIT=1 docker build -f backend.Dockerfile backend/ --tag backend:v1.0-"$STUDENT_LABEL"
 }
 
 createNetworks() {
