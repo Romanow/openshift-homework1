@@ -1,34 +1,96 @@
 #!/bin/sh
 
+# запустить скрипт в bash:
+# sh test.sh
+
 set -e
 
+# -f [путь до докер-файла] [на базе какой папки собирать]
+
+buildPostgres() {
+  DOCKER_BUILDKIT=1 docker build \
+    -f postgres.Dockerfile backend/postgres/ \
+    --tag postgres:v1.0-"$STUDENT_LABEL"
+}
+
 buildFrontend() {
-  DOCKER_BUILDKIT=1 docker build -f frontend.Dockerfile frontend/ --tag frontend:v1.0-"$STUDENT_LABEL"
+  DOCKER_BUILDKIT=1 docker build \
+    -f frontend.Dockerfile frontend/ \
+    --tag frontend:v1.0-"$STUDENT_LABEL"
 }
 
 buildBackend() {
-  ./backend/gradlew clean build -p backend
-  DOCKER_BUILDKIT=1 docker build -f backend.Dockerfile backend/ --tag backend:v1.0-"$STUDENT_LABEL"
+  ./backend/gradlew clean build \
+    -p backend \
+    -x test
+  DOCKER_BUILDKIT=1 docker build \
+    -f backend.Dockerfile backend/ \
+    --tag backend:v1.0-"$STUDENT_LABEL"
 }
 
 createNetworks() {
-  echo "TODO create networks"
+  echo "create networks"
+
+  docker network create \
+    --driver bridge \
+    backend_frontend-"$STUDENT_LABEL" \
+    --label "$BASE_LABEL-$STUDENT_LABEL"
+  docker network create \
+    --driver bridge \
+    postgres_network-"$STUDENT_LABEL" \
+    --label "$BASE_LABEL-$STUDENT_LABEL"
+  #  "bridge" - драйвер по дефолту
 }
 
 createVolume() {
-  echo "TODO create volume for postgres"
+  echo "create volume for postgres"
+  docker volume create postgres-data-"$STUDENT_LABEL" \
+    --label "$BASE_LABEL-$STUDENT_LABEL"
 }
 
+#  ПРОБЛЕМА - команда не отрабатывала как ожидалось
+#     --volume "$PWD"/backend/postgres:/docker-entrypoint-initdb.d \
+#  игнорировалось содержимое: /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/* (из логов контейнера постгре)
+#  ещё создавалась папка "postgres;C", в контейнере постгре - Inspect - Mounts - значилась именно эта кривая папка - почему? - непонятно!
+
+#  РЕШЕНИЕ - убрал этот волюм, создал отдельный докер файл под постгре,
+#  там взял дефолтный имедж постгре и скопировал содержимое папки postgres в /docker-entrypoint-initdb.d
+
 runPostgres() {
-  echo "TODO run postgres"
+  echo "run postgres"
+  docker run -d \
+    --name postgres \
+    -p 5432:5432 \
+    --label "$BASE_LABEL-$STUDENT_LABEL" \
+    -e POSTGRES_USER=postgres \
+    -e POSTGRES_PASSWORD=postgres \
+    -e POSTGRES_DB=postgres \
+    --volume postgres-data-"$STUDENT_LABEL":/var/lib/postgresql/data \
+    --network postgres_network-"$STUDENT_LABEL" \
+    postgres:v1.0-"$STUDENT_LABEL"
 }
 
 runBackend() {
-  echo "TODO run backend"
+  echo "run backend"
+  sleep 10
+  docker run -d \
+    --name backend-"$STUDENT_LABEL" \
+    --label "$BASE_LABEL-$STUDENT_LABEL" \
+    -p 8080:8080 \
+    -e "SPRING_PROFILES_ACTIVE=docker" \
+    --network postgres_network-"$STUDENT_LABEL" \
+    backend:v1.0-"$STUDENT_LABEL"
+  docker network connect backend_frontend-"$STUDENT_LABEL" backend-"$STUDENT_LABEL"
 }
 
 runFrontend() {
   echo "RUN frontend"
+  docker run -d \
+    --name frontend-"$STUDENT_LABEL" \
+    --label "$BASE_LABEL-$STUDENT_LABEL" \
+    -p 3000:80 \
+    --network backend_frontend-"$STUDENT_LABEL" \
+    frontend:v1.0-"$STUDENT_LABEL"
 }
 
 checkResult() {
@@ -39,6 +101,8 @@ checkResult() {
       curl -s -o response.txt -w "%{http_code}" http://backend-"$STUDENT_LABEL":8080/api/v1/public/items
   )
 
+  echo "$http_response"
+
   if [ "$http_response" != "200" ]; then
     echo "Check failed"
     exit 1
@@ -46,8 +110,10 @@ checkResult() {
 }
 
 BASE_LABEL=homework1
-# TODO student surname name
-STUDENT_LABEL=
+STUDENT_LABEL=AndreevAleksandr
+
+echo "=== Build postgres postgres:v1.0-$STUDENT_LABEL ==="
+buildPostgres
 
 echo "=== Build backend backend:v1.0-$STUDENT_LABEL ==="
 buildBackend
