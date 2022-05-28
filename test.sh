@@ -21,12 +21,13 @@ docker volume create --label $BASE_LABEL-$STUDENT_LABEL --name postgres
 }
 
 runPostgres() {
-docker run -d --name postgres-openshift \
+docker run -d --name postgres \
 	-p 5432:5432 \
-	-e POSTGRES_USER=test \
+	-e POSTGRES_USER=program \
 	-e POSTGRES_PASSWORD=test \
-	-e POSTGRES_DB=example \
+	-e POSTGRES_DB=todo_list \
 	-l $BASE_LABEL-$STUDENT_LABEL \
+	--network backend-postgres \
 	-v postgres \
 	postgres:13
 }
