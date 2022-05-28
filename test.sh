@@ -3,17 +3,17 @@
 set -e
 
 buildFrontend() {
-  DOCKER_BUILDKIT=1 docker build -f frontend.Dockerfile frontend/ --tag frontend:v1.0-"$STUDENT_LABEL"
+  DOCKER_BUILDKIT=1 docker build -f frontend.Dockerfile --tag frontend:v1.0-"$STUDENT_LABEL" ./frontend
 }
 
 buildBackend() {
   ./backend/gradlew clean build -p backend
-  DOCKER_BUILDKIT=1 docker build -f backend.Dockerfile backend/ --tag backend:v1.0-"$STUDENT_LABEL"
+  DOCKER_BUILDKIT=1 docker build -f backend.Dockerfile -t backend:v1.0-"$STUDENT_LABEL" ./backend
 }
 
 createNetworks() {
-docker network create --label $BASE_LABEL-$STUDENT_LABEL backend-postgres
-docker network create --label $BASE_LABEL-$STUDENT_LABEL frontend-backend
+docker network create --label $BASE_LABEL-$STUDENT_LABEL backend-postgres || true
+docker network create --label $BASE_LABEL-$STUDENT_LABEL frontend-backend || true
 }
 
 createVolume() {
@@ -21,32 +21,32 @@ docker volume create --label $BASE_LABEL-$STUDENT_LABEL --name postgres
 }
 
 runPostgres() {
-docker run -d --name postgres \
+docker run -d --name postgres-openshift \
 	-p 5432:5432 \
 	-e POSTGRES_USER=test \
 	-e POSTGRES_PASSWORD=test \
 	-e POSTGRES_DB=example \
 	-l $BASE_LABEL-$STUDENT_LABEL \
-	-v postgres
+	-v postgres \
 	postgres:13
 }
 
 runBackend() {
- docker run -d --name backend-$BASE_LABEL-$STUDENT_LABEL \
+ docker run -d --name backend-$STUDENT_LABEL \
 	 -p 8080:8080 \
 	 -e SPRING_PROFILES_ACTIVE=docker \
 	 -l $BASE_LABEL-$STUDENT_LABEL \
 	 --network backend-postgres \
-	 --network frontend-backend \
-	 backend
+	 backend:v1.0-"$STUDENT_LABEL"  
+  docker network connect bridge backend-$STUDENT_LABEL  
 }
 
 runFrontend() {
-	docker run -d name -frontend-$BASE_LABEL-$STUDENT_LABEL \
+	docker run -d --name frontend-$STUDENT_LABEL \
 		-p 3000:80 \
 		-l $BASE_LABEL-$STUDENT_LABEL \
 		--network frontend-backend \
-		frontend
+		frontend:v1.0-"$STUDENT_LABEL" 
 }
 
 checkResult() {
