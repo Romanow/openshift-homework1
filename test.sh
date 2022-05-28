@@ -12,23 +12,41 @@ buildBackend() {
 }
 
 createNetworks() {
-  echo "TODO create networks"
+docker network create --label $BASE_LABEL-$STUDENT_LABEL backend-postgres
+docker network create --label $BASE_LABEL-$STUDENT_LABEL frontend-backend
 }
 
 createVolume() {
-  echo "TODO create volume for postgres"
+docker volume create --label $BASE_LABEL-$STUDENT_LABEL --name postgres
 }
 
 runPostgres() {
-  echo "TODO run postgres"
+docker run -d --name postgres \
+	-p 5432:5432 \
+	-e POSTGRES_USER=test \
+	-e POSTGRES_PASSWORD=test \
+	-e POSTGRES_DB=example \
+	-l $BASE_LABEL-$STUDENT_LABEL \
+	-v postgres
+	postgres:13
 }
 
 runBackend() {
-  echo "TODO run backend"
+ docker run -d --name backend-$BASE_LABEL-$STUDENT_LABEL \
+	 -p 8080:8080 \
+	 -e SPRING_PROFILES_ACTIVE=docker \
+	 -l $BASE_LABEL-$STUDENT_LABEL \
+	 --network backend-postgres \
+	 --network frontend-backend \
+	 backend
 }
 
 runFrontend() {
-  echo "RUN frontend"
+	docker run -d name -frontend-$BASE_LABEL-$STUDENT_LABEL \
+		-p 3000:80 \
+		-l $BASE_LABEL-$STUDENT_LABEL \
+		--network frontend-backend \
+		frontend
 }
 
 checkResult() {
@@ -47,7 +65,7 @@ checkResult() {
 
 BASE_LABEL=homework1
 # TODO student surname name
-STUDENT_LABEL=
+STUDENT_LABEL=slepenkov
 
 echo "=== Build backend backend:v1.0-$STUDENT_LABEL ==="
 buildBackend
