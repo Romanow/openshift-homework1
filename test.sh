@@ -3,32 +3,51 @@
 set -e
 
 buildFrontend() {
-  DOCKER_BUILDKIT=1 docker build -f frontend.Dockerfile frontend/ --tag frontend:v1.0-"$STUDENT_LABEL"
+  DOCKER_BUILDKIT=1 docker build -f frontend.Dockerfile --tag frontend:v1.0-"$STUDENT_LABEL" ./frontend
 }
 
 buildBackend() {
   ./backend/gradlew clean build -p backend
-  DOCKER_BUILDKIT=1 docker build -f backend.Dockerfile backend/ --tag backend:v1.0-"$STUDENT_LABEL"
+  DOCKER_BUILDKIT=1 docker build -f backend.Dockerfile -t backend:v1.0-"$STUDENT_LABEL" ./backend
 }
 
 createNetworks() {
-  echo "TODO create networks"
+docker network create --label $BASE_LABEL-$STUDENT_LABEL backend-postgres || true
+docker network create --label $BASE_LABEL-$STUDENT_LABEL frontend-backend || true
 }
 
 createVolume() {
-  echo "TODO create volume for postgres"
+docker volume create --label $BASE_LABEL-$STUDENT_LABEL --name postgres
 }
 
 runPostgres() {
-  echo "TODO run postgres"
+docker run -d --name postgres \
+	-p 5432:5432 \
+	-e POSTGRES_USER=program \
+	-e POSTGRES_PASSWORD=test \
+	-e POSTGRES_DB=todo_list \
+	-l $BASE_LABEL-$STUDENT_LABEL \
+	--network backend-postgres \
+	-v postgres \
+	postgres:13
 }
 
 runBackend() {
-  echo "TODO run backend"
+ docker run -d --name backend-$STUDENT_LABEL \
+	 -p 8080:8080 \
+	 -e SPRING_PROFILES_ACTIVE=docker \
+	 -l $BASE_LABEL-$STUDENT_LABEL \
+	 --network backend-postgres \
+	 backend:v1.0-"$STUDENT_LABEL"  
+  docker network connect frontend-backend backend-$STUDENT_LABEL  
 }
 
 runFrontend() {
-  echo "RUN frontend"
+	docker run -d --name frontend-$STUDENT_LABEL \
+		-p 3000:80 \
+		-l $BASE_LABEL-$STUDENT_LABEL \
+		--network frontend-backend \
+		frontend:v1.0-"$STUDENT_LABEL" 
 }
 
 checkResult() {
@@ -47,7 +66,7 @@ checkResult() {
 
 BASE_LABEL=homework1
 # TODO student surname name
-STUDENT_LABEL=
+STUDENT_LABEL=slepenkov
 
 echo "=== Build backend backend:v1.0-$STUDENT_LABEL ==="
 buildBackend
