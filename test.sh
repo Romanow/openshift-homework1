@@ -39,7 +39,7 @@ runBackend() {
 	 -l $BASE_LABEL-$STUDENT_LABEL \
 	 --network backend-postgres \
 	 backend:v1.0-"$STUDENT_LABEL"  
-  docker network connect bridge backend-$STUDENT_LABEL  
+  docker network connect frontend-backend backend-$STUDENT_LABEL  
 }
 
 runFrontend() {
