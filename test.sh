@@ -12,23 +12,67 @@ buildBackend() {
 }
 
 createNetworks() {
-  echo "TODO create networks"
+  docker network create \
+    --label="$BASE_LABEL-$STUDENT_LABEL" \
+    --driver=bridge \
+    network-frontend-"$BASE_LABEL-$STUDENT_LABEL"
+
+  docker network create \
+    --label="$BASE_LABEL-$STUDENT_LABEL" \
+    --driver=bridge \
+    network-backend-"$BASE_LABEL-$STUDENT_LABEL"
 }
 
 createVolume() {
-  echo "TODO create volume for postgres"
+  docker volume create \
+    --label="$BASE_LABEL-$STUDENT_LABEL" \
+    volume-"$BASE_LABEL-$STUDENT_LABEL"
 }
 
 runPostgres() {
-  echo "TODO run postgres"
+  docker run -d \
+    --label="$BASE_LABEL-$STUDENT_LABEL" \
+    --name=postgres \
+    -e POSTGRES_USER=program \
+    -e POSTGRES_PASSWORD=test \
+    -e POSTGRES_DB=todo_list \
+    --volume volume-"$BASE_LABEL-$STUDENT_LABEL":/var/lib/postgresql/data \
+    --network network-backend-"$BASE_LABEL-$STUDENT_LABEL" \
+    --network-alias postgres \
+    postgres:13
 }
 
 runBackend() {
-  echo "TODO run backend"
+  docker create \
+    --name=backend-"$STUDENT_LABEL" \
+    --label="$BASE_LABEL-$STUDENT_LABEL" \
+    -p 8080:8080 \
+    -e SPRING_PROFILES_ACTIVE="docker" \
+    --network network-backend-"$BASE_LABEL-$STUDENT_LABEL" \
+    backend:v1.0-"$STUDENT_LABEL"
+
+  docker start backend-"$STUDENT_LABEL"
+
+  docker network connect \
+    --alias backend \
+    network-frontend-"$BASE_LABEL-$STUDENT_LABEL" \
+    backend-"$STUDENT_LABEL"
 }
 
 runFrontend() {
-  echo "RUN frontend"
+  docker create \
+    --name=frontend-"$STUDENT_LABEL" \
+    --label="$BASE_LABEL-$STUDENT_LABEL" \
+    -p 3000:80 \
+    --network network-frontend-"$BASE_LABEL-$STUDENT_LABEL" \
+    frontend:v1.0-"$STUDENT_LABEL"
+
+  docker start frontend-"$STUDENT_LABEL"
+
+  docker network connect \
+    --alias frontend \
+    network-backend-"$BASE_LABEL-$STUDENT_LABEL" \
+    frontend-"$STUDENT_LABEL"
 }
 
 checkResult() {
@@ -47,7 +91,7 @@ checkResult() {
 
 BASE_LABEL=homework1
 # TODO student surname name
-STUDENT_LABEL=
+STUDENT_LABEL=yalalov
 
 echo "=== Build backend backend:v1.0-$STUDENT_LABEL ==="
 buildBackend
