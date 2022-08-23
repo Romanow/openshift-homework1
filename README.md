@@ -32,11 +32,8 @@ list.
     * для взаимодействия между backend и PostgreSQL;
     * для взаимодействия backend и frontend.
 * Docker compose использовать нельзя, все ресурсы описываются через docker.
-* В [test.sh](test.sh) прописать `STUDENT_LABEL` свою фамилию.
-* Каждый создаваемый ресурс (network, volume, container) требуется пометить label `$BASE_LABEL-$STUDENT_LABEL`. Это
+* Каждый создаваемый ресурс (network, volume, container) требуется пометить label `$BASE_LABEL`. Это
   нужно для корректной очистки ресурсов.
-* Контейнеры backend и frontend именовать суффиксом `<name>-$STUDENT_LABEL`, контейнер с Postgres просто `postgres` (по
-  этому имени из backend выполняется подключение к БД).
 * В результате реализации всех описанных выше шагов, должна быть возможность работать TODO list с localhost, т.е. можно
   открыть страницу в браузере и проверить работоспобность .
 * Для автоматизированной проверки работоспособности выполняется запрос из контейнера frontend в контейнер backend по
@@ -50,7 +47,7 @@ list.
 * Backend нужно запустить с профилем `docker`. Для этого требуется внутрь контейнера пробросить переменную
   среды `SPRING_PROFILES_ACTIVE=docker`.
 * Для очистки ресурсов можно использовать [cleanup.sh](cleanup.sh). Этот скрипт создает
-  контейнер [ryuk](https://github.com/testcontainers/moby-ryuk) , которые ищет ресурсы, помеченные label=<name>, и
+  контейнер [ryuk](https://github.com/testcontainers/moby-ryuk) , которые ищет ресурсы, помеченные `label=$BASE_LABEL`, и
   удаляет их через 10 секунд.
 * Для backend нужно в Postgres создать БД `todo_list` и пользователя `program`:`test`. Здесь можно использовать два
   варианта решения:
