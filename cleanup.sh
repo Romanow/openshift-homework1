@@ -1,8 +1,5 @@
 #!/bin/sh
 
-docker run -d \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -p 9000:8080 \
-  quay.io/testcontainers/ryuk
-
-printf "label=%s" "$BASE_LABEL" | nc localhost 9000
+docker rm -f backend frontend postgres
+docker network rm network-backend network-frontend
+docker volume rm postgres-data

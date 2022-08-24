@@ -36,7 +36,7 @@ checkResult() {
   http_response=$(
     docker exec \
       frontend \
-      curl -s -o response.txt -w "%{http_code}" http://backend:8080/api/v1/public/items
+      curl -s -o response.txt -w "%{http_code}" http://backend-service:8080/backend/api/v1/public/items
   )
 
   if [ "$http_response" != "200" ]; then
@@ -45,12 +45,10 @@ checkResult() {
   fi
 }
 
-BASE_LABEL=homework1
-
-echo "=== Build backend backend:v1.0L ==="
+echo "=== Build backend backend:v1.0 ==="
 buildBackend
 
-echo "=== Build frontend frontend:v1.0L ==="
+echo "=== Build frontend frontend:v1.0 ==="
 buildFrontend
 
 echo "=== Create networks between backend <-> postgres and backend <-> frontend ==="
